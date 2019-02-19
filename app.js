@@ -2,8 +2,10 @@ const express = require('express');
 const graphqlHTTP = require('express-graphql');
 const schema = require('./graphql/schema/schema');
 const mongoose = require('mongoose');
+const cors = require('cors');
 
 const app = express();
+app.use(cors());
 
 // connect to mongoDB Atlas
 mongoose.connect('your_MongoDB_string', {
