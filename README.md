@@ -18,7 +18,7 @@
 If you are interested in other usefull fullstack templates and boilerplates check my other repos.
 
 
-You maight also want simple [client repo for this project](https://news-board-vue.firebaseapp.com/) where I used Vue.js <img src="https://cdn-images-1.medium.com/max/800/1*qiTJR-sO5ULMV1YqCItT8w.jpeg" alt="MongoDB" width="64" style="display: inline">
+You maight also want simple [client repo for this project](https://github.com/sebastianluszczek/Vue.js_GraphQL_client) where I used Vue.js <img src="https://cdn-images-1.medium.com/max/800/1*qiTJR-sO5ULMV1YqCItT8w.jpeg" alt="MongoDB" width="64" style="display: inline">
 
 ### Build Setup
 
