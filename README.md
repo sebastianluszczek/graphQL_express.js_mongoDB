@@ -30,4 +30,4 @@ npm install
 npm run start
 ```
 
-After runing server you have access to graphiQL app at http://localhost:4000/graphiql
+After runing server you have access to graphiQL app at http://localhost:4000/graphql
