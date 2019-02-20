@@ -1,4 +1,4 @@
-# graphQL_express.js_mongoDB
+# GraphQL, express.js & mongoDB boilerplate
 
 > Practice project in witch I used GraphQL with Node.js server (express.js) and MongoDB Cloud.
 > This project may serve as a boilerplate for future more complex projects.
