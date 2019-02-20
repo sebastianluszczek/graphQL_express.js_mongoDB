@@ -23,9 +23,6 @@ You maight also want simple [client repo for this project](https://github.com/se
 ### Build Setup
 
 ``` bash
-# move directory 
-cd server
-
 # install dependencies
 npm install
 
