@@ -8,7 +8,7 @@ const app = express();
 app.use(cors());
 
 // connect to mongoDB Atlas
-mongoose.connect('your_MongoDB_string', {
+mongoose.connect('mongodb+srv://utkow1991:utkow_1991@cluster0-ympqd.mongodb.net/film_database?retryWrites=true', {
     useNewUrlParser: true
 });
 mongoose.connection.once('on', () => {

@@ -1,6 +1,7 @@
 const graphql = require('graphql');
-const Book = require('../../models/book');
-const Author = require('../../models/author');
+const Film = require('../../models/film');
+const Director = require('../../models/director');
+const Actor = require('../../models/actor');
 
 const {
     GraphQLObjectType,
@@ -14,8 +15,8 @@ const {
 
 // GraphQL query types
 
-const BookType = new GraphQLObjectType({
-    name: 'Book',
+const FilmType = new GraphQLObjectType({
+    name: 'Film',
     fields: () => ({
         id: {
             type: GraphQLID
@@ -26,17 +27,27 @@ const BookType = new GraphQLObjectType({
         genre: {
             type: GraphQLString
         },
-        author: {
-            type: AuthorType,
+        director: {
+            type: DirectorType,
             resolve(parent, args) {
-                return Author.findById(parent.author_id);
+                return Director.findById(parent.director_id);
+            }
+        },
+        actors: {
+            type: new GraphQLList(ActorType),
+            resolve(parent, args) {
+                return Actor.find({
+                    _id: {
+                        $in: parent.actors
+                    }
+                });
             }
         }
     })
 });
 
-const AuthorType = new GraphQLObjectType({
-    name: 'Author',
+const DirectorType = new GraphQLObjectType({
+    name: 'Director',
     fields: () => ({
         id: {
             type: GraphQLID
@@ -47,52 +58,93 @@ const AuthorType = new GraphQLObjectType({
         age: {
             type: GraphQLInt
         },
-        books: {
-            type: new GraphQLList(BookType),
+        films: {
+            type: new GraphQLList(FilmType),
             resolve(parent, args) {
-                return Book.find({
-                    author_id: parent.id
+                return Film.find({
+                    director_id: parent.id
                 });
             }
         }
     })
 });
 
+const ActorType = new GraphQLObjectType({
+    name: 'Actor',
+    fields: () => ({
+        id: {
+            type: GraphQLID
+        },
+        name: {
+            type: GraphQLString
+        },
+        age: {
+            type: GraphQLInt
+        },
+        films: {
+            type: new GraphQLList(FilmType),
+            resolve(parent, args) {
+                return Film.find({
+                    actors: parent.id
+                });
+            }
+        }
+    })
+});
+
+
 const RootQuery = new GraphQLObjectType({
-    name: 'GootQueryType',
+    name: 'RootQueryType',
     fields: {
-        book: {
-            type: BookType,
+        film: {
+            type: FilmType,
             args: {
                 id: {
                     type: GraphQLID
                 }
             },
             resolve(parent, args) {
-                return Book.findById(args.id);
+                return Film.findById(args.id);
             }
         },
-        author: {
-            type: AuthorType,
+        director: {
+            type: DirectorType,
             args: {
                 id: {
                     type: GraphQLID
                 }
             },
             resolve(parent, args) {
-                return Author.findById(args.id);
+                return Director.findById(args.id);
             }
         },
-        books: {
-            type: new GraphQLList(BookType),
+        actor: {
+            type: ActorType,
+            args: {
+                id: {
+                    type: GraphQLID
+                }
+            },
             resolve(parent, args) {
-                return Book.find({});
+                return Actor.findById(args.id);
             }
         },
-        authors: {
-            type: new GraphQLList(AuthorType),
+        films: {
+            type: new GraphQLList(FilmType),
             resolve(parent, args) {
-                return Author.find({});
+                return Film.find({});
+            }
+        },
+        directors: {
+            type: new GraphQLList(DirectorType),
+            resolve(parent, args) {
+                return Director.find({});
+            }
+        },
+        actors: {
+            type: new GraphQLList(ActorType),
+            resolve(parent, args) {
+                return Actor.find({});
             }
         }
     }
@@ -101,8 +153,8 @@ const RootQuery = new GraphQLObjectType({
 const Mutation = new GraphQLObjectType({
     name: 'Mutation',
     fields: {
-        addAuthor: {
-            type: AuthorType,
+        addDirector: {
+            type: DirectorType,
             args: {
                 name: {
                     type: new GraphQLNonNull(GraphQLString)
@@ -112,15 +164,15 @@ const Mutation = new GraphQLObjectType({
                 }
             },
             resolve(parent, args) {
-                let author = new Author({
+                let director = new Director({
                     name: args.name,
                     age: args.age
                 });
-                return author.save()
+                return director.save()
             }
         },
-        addBook: {
-            type: BookType,
+        addFilm: {
+            type: FilmType,
             args: {
                 name: {
                     type: new GraphQLNonNull(GraphQLString)
@@ -128,17 +180,17 @@ const Mutation = new GraphQLObjectType({
                 genre: {
                     type: new GraphQLNonNull(GraphQLString)
                 },
-                author_id: {
+                director_id: {
                     type: new GraphQLNonNull(GraphQLID)
                 }
             },
             resolve(parent, args) {
-                let book = new Book({
+                let film = new Film({
                     name: args.name,
                     genre: args.genre,
-                    author_id: args.author_id
+                    director_id: args.director_id
                 });
-                return book.save();
+                return film.save();
             }
         }
     }
