@@ -10,7 +10,8 @@ const {
     GraphQLID,
     GraphQLInt,
     GraphQLList,
-    GraphQLNonNull
+    GraphQLNonNull,
+    GraphQLInputObjectType
 } = graphql;
 
 // GraphQL query types
@@ -92,6 +93,24 @@ const ActorType = new GraphQLObjectType({
     })
 });
 
+const FilmInput = new GraphQLInputObjectType({
+    name: 'FilmInput',
+    fields: () => ({
+        name: {
+            type: new GraphQLNonNull(GraphQLString)
+        },
+        genre: {
+            type: new GraphQLNonNull(GraphQLString)
+        },
+        director_id: {
+            type: new GraphQLNonNull(GraphQLID)
+        },
+        actors: {
+            type: new GraphQLNonNull(GraphQLList(GraphQLString))
+        }
+    })
+})
+
 
 const RootQuery = new GraphQLObjectType({
     name: 'RootQueryType',
@@ -103,15 +122,20 @@ const RootQuery = new GraphQLObjectType({
                     type: GraphQLID
                 }
             },
-            resolve(parent, args) {
-                return Film.findById(args.id);
+            async resolve(parent, args) {
+                try {
+                    const response = await Film.findById(args.id);
+                    return response;
+                } catch (err) {
+                    throw err;
+                }
             }
         },
         director: {
             type: DirectorType,
             args: {
                 id: {
-                    type: GraphQLID
+                    type: new GraphQLNonNull(GraphQLID)
                 }
             },
             resolve(parent, args) {
@@ -122,7 +146,7 @@ const RootQuery = new GraphQLObjectType({
             type: ActorType,
             args: {
                 id: {
-                    type: GraphQLID
+                    type: new GraphQLNonNull(GraphQLID)
                 }
             },
             resolve(parent, args) {
@@ -131,26 +155,54 @@ const RootQuery = new GraphQLObjectType({
         },
         films: {
             type: new GraphQLList(FilmType),
-            resolve(parent, args) {
-                return Film.find({});
+            args: {
+                genre: {
+                    type: GraphQLString
+                }
+            },
+            async resolve(parent, args) {
+                try {
+                    if (args.genre) {
+                        const result = await Film.find({
+                            genre: args.genre
+                        });
+                        return result;
+                    } else {
+                        const result = await Film.find({});
+                        return result;
+                    }
+
+                } catch (err) {
+                    throw err;
+                }
             }
         },
         directors: {
             type: new GraphQLList(DirectorType),
-            resolve(parent, args) {
-                return Director.find({});
+            async resolve(parent, args) {
+                try {
+                    const result = await Director.find({});
+                    return result;
+                } catch (err) {
+                    throw err;
+                }
             }
         },
         actors: {
             type: new GraphQLList(ActorType),
-            resolve(parent, args) {
-                return Actor.find({});
+            async resolve(parent, args) {
+                try {
+                    const result = await Actor.find({});
+                    return result;
+                } catch (err) {
+                    throw err;
+                }
             }
         }
     }
 });
 
-const Mutation = new GraphQLObjectType({
+const Mutations = new GraphQLObjectType({
     name: 'Mutation',
     fields: {
         addDirector: {
@@ -163,34 +215,62 @@ const Mutation = new GraphQLObjectType({
                     type: new GraphQLNonNull(GraphQLInt)
                 }
             },
-            resolve(parent, args) {
-                let director = new Director({
-                    name: args.name,
-                    age: args.age
-                });
-                return director.save()
+            async resolve(parent, args) {
+                try {
+                    let director = new Director({
+                        name: args.name,
+                        age: args.age
+                    });
+                    const result = await director.save()
+                    return result;
+                } catch (err) {
+                    throw err;
+                }
+            }
+        },
+        addActor: {
+            type: ActorType,
+            args: {
+                name: {
+                    type: new GraphQLNonNull(GraphQLString)
+                },
+                age: {
+                    type: new GraphQLNonNull(GraphQLInt)
+                }
+            },
+            async resolve(parent, args) {
+                try {
+                    let actor = new Actor({
+                        name: args.name,
+                        age: args.age
+                    });
+                    const result = await actor.save()
+                    return result;
+                } catch (err) {
+                    throw err;
+                }
             }
         },
         addFilm: {
             type: FilmType,
             args: {
-                name: {
-                    type: new GraphQLNonNull(GraphQLString)
-                },
-                genre: {
-                    type: new GraphQLNonNull(GraphQLString)
-                },
-                director_id: {
-                    type: new GraphQLNonNull(GraphQLID)
+                inputFilm: {
+                    type: FilmInput
                 }
             },
-            resolve(parent, args) {
-                let film = new Film({
-                    name: args.name,
-                    genre: args.genre,
-                    director_id: args.director_id
-                });
-                return film.save();
+            async resolve(parent, args) {
+                try {
+                    let film = new Film({
+                        name: args.inputFilm.name,
+                        genre: args.inputFilm.genre,
+                        director_id: args.inputFilm.director_id,
+                        actors: args.inputFilm.actors
+                    });
+                    const result = await film.save();
+                    return result;
+                } catch (err) {
+                    throw err;
+                }
             }
         }
     }
@@ -198,5 +278,5 @@ const Mutation = new GraphQLObjectType({
 
 module.exports = new GraphQLSchema({
     query: RootQuery,
-    mutation: Mutation
+    mutation: Mutations
 })
