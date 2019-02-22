@@ -3,6 +3,10 @@
 > Practice project in witch I used GraphQL with Node.js server (express.js) and MongoDB Cloud.
 > This project may serve as a boilerplate for future more complex projects.
 
+
+> On branch "films" is much more complicated code with 3 connected DB collections.
+> In future I will add documentation for api and Front-End Vue Client
+
 ---
 
 ### In project i use:
