@@ -1,6 +1,7 @@
 const graphql = require('graphql');
-const Book = require('../../models/book');
-const Author = require('../../models/author');
+const Film = require('../../models/film');
+const Director = require('../../models/director');
+const Actor = require('../../models/actor');
 
 const {
     GraphQLObjectType,
@@ -9,13 +10,14 @@ const {
     GraphQLID,
     GraphQLInt,
     GraphQLList,
-    GraphQLNonNull
+    GraphQLNonNull,
+    GraphQLInputObjectType
 } = graphql;
 
 // GraphQL query types
 
-const BookType = new GraphQLObjectType({
-    name: 'Book',
+const FilmType = new GraphQLObjectType({
+    name: 'Film',
     fields: () => ({
         id: {
             type: GraphQLID
@@ -26,17 +28,27 @@ const BookType = new GraphQLObjectType({
         genre: {
             type: GraphQLString
         },
-        author: {
-            type: AuthorType,
+        director: {
+            type: DirectorType,
             resolve(parent, args) {
-                return Author.findById(parent.author_id);
+                return Director.findById(parent.director_id);
+            }
+        },
+        actors: {
+            type: new GraphQLList(ActorType),
+            resolve(parent, args) {
+                return Actor.find({
+                    _id: {
+                        $in: parent.actors
+                    }
+                });
             }
         }
     })
 });
 
-const AuthorType = new GraphQLObjectType({
-    name: 'Author',
+const DirectorType = new GraphQLObjectType({
+    name: 'Director',
     fields: () => ({
         id: {
             type: GraphQLID
@@ -47,62 +59,154 @@ const AuthorType = new GraphQLObjectType({
         age: {
             type: GraphQLInt
         },
-        books: {
-            type: new GraphQLList(BookType),
+        films: {
+            type: new GraphQLList(FilmType),
             resolve(parent, args) {
-                return Book.find({
-                    author_id: parent.id
+                return Film.find({
+                    director_id: parent.id
                 });
             }
         }
     })
 });
 
+const ActorType = new GraphQLObjectType({
+    name: 'Actor',
+    fields: () => ({
+        id: {
+            type: GraphQLID
+        },
+        name: {
+            type: GraphQLString
+        },
+        age: {
+            type: GraphQLInt
+        },
+        films: {
+            type: new GraphQLList(FilmType),
+            resolve(parent, args) {
+                return Film.find({
+                    actors: parent.id
+                });
+            }
+        }
+    })
+});
+
+const FilmInput = new GraphQLInputObjectType({
+    name: 'FilmInput',
+    fields: () => ({
+        name: {
+            type: new GraphQLNonNull(GraphQLString)
+        },
+        genre: {
+            type: new GraphQLNonNull(GraphQLString)
+        },
+        director_id: {
+            type: new GraphQLNonNull(GraphQLID)
+        },
+        actors: {
+            type: new GraphQLNonNull(GraphQLList(GraphQLString))
+        }
+    })
+})
+
+
 const RootQuery = new GraphQLObjectType({
-    name: 'GootQueryType',
+    name: 'RootQueryType',
     fields: {
-        book: {
-            type: BookType,
+        film: {
+            type: FilmType,
             args: {
                 id: {
                     type: GraphQLID
                 }
             },
-            resolve(parent, args) {
-                return Book.findById(args.id);
+            async resolve(parent, args) {
+                try {
+                    const response = await Film.findById(args.id);
+                    return response;
+                } catch (err) {
+                    throw err;
+                }
             }
         },
-        author: {
-            type: AuthorType,
+        director: {
+            type: DirectorType,
             args: {
                 id: {
-                    type: GraphQLID
+                    type: new GraphQLNonNull(GraphQLID)
                 }
             },
             resolve(parent, args) {
-                return Author.findById(args.id);
+                return Director.findById(args.id);
             }
         },
-        books: {
-            type: new GraphQLList(BookType),
+        actor: {
+            type: ActorType,
+            args: {
+                id: {
+                    type: new GraphQLNonNull(GraphQLID)
+                }
+            },
             resolve(parent, args) {
-                return Book.find({});
+                return Actor.findById(args.id);
             }
         },
-        authors: {
-            type: new GraphQLList(AuthorType),
-            resolve(parent, args) {
-                return Author.find({});
+        films: {
+            type: new GraphQLList(FilmType),
+            args: {
+                genre: {
+                    type: GraphQLString
+                }
+            },
+            async resolve(parent, args) {
+                try {
+                    if (args.genre) {
+                        const result = await Film.find({
+                            genre: args.genre
+                        });
+                        return result;
+                    } else {
+                        const result = await Film.find({});
+                        return result;
+                    }
+
+                } catch (err) {
+                    throw err;
+                }
+            }
+        },
+        directors: {
+            type: new GraphQLList(DirectorType),
+            async resolve(parent, args) {
+                try {
+                    const result = await Director.find({});
+                    return result;
+                } catch (err) {
+                    throw err;
+                }
+            }
+        },
+        actors: {
+            type: new GraphQLList(ActorType),
+            async resolve(parent, args) {
+                try {
+                    const result = await Actor.find({});
+                    return result;
+                } catch (err) {
+                    throw err;
+                }
             }
         }
     }
 });
 
-const Mutation = new GraphQLObjectType({
+const Mutations = new GraphQLObjectType({
     name: 'Mutation',
     fields: {
-        addAuthor: {
-            type: AuthorType,
+        addDirector: {
+            type: DirectorType,
             args: {
                 name: {
                     type: new GraphQLNonNull(GraphQLString)
@@ -111,34 +215,62 @@ const Mutation = new GraphQLObjectType({
                     type: new GraphQLNonNull(GraphQLInt)
                 }
             },
-            resolve(parent, args) {
-                let author = new Author({
-                    name: args.name,
-                    age: args.age
-                });
-                return author.save()
+            async resolve(parent, args) {
+                try {
+                    let director = new Director({
+                        name: args.name,
+                        age: args.age
+                    });
+                    const result = await director.save()
+                    return result;
+                } catch (err) {
+                    throw err;
+                }
             }
         },
-        addBook: {
-            type: BookType,
+        addActor: {
+            type: ActorType,
             args: {
                 name: {
                     type: new GraphQLNonNull(GraphQLString)
                 },
-                genre: {
-                    type: new GraphQLNonNull(GraphQLString)
-                },
-                author_id: {
-                    type: new GraphQLNonNull(GraphQLID)
+                age: {
+                    type: new GraphQLNonNull(GraphQLInt)
                 }
             },
-            resolve(parent, args) {
-                let book = new Book({
-                    name: args.name,
-                    genre: args.genre,
-                    author_id: args.author_id
-                });
-                return book.save();
+            async resolve(parent, args) {
+                try {
+                    let actor = new Actor({
+                        name: args.name,
+                        age: args.age
+                    });
+                    const result = await actor.save()
+                    return result;
+                } catch (err) {
+                    throw err;
+                }
+            }
+        },
+        addFilm: {
+            type: FilmType,
+            args: {
+                inputFilm: {
+                    type: FilmInput
+                }
+            },
+            async resolve(parent, args) {
+                try {
+                    let film = new Film({
+                        name: args.inputFilm.name,
+                        genre: args.inputFilm.genre,
+                        director_id: args.inputFilm.director_id,
+                        actors: args.inputFilm.actors
+                    });
+                    const result = await film.save();
+                    return result;
+                } catch (err) {
+                    throw err;
+                }
             }
         }
     }
@@ -146,5 +278,5 @@ const Mutation = new GraphQLObjectType({
 
 module.exports = new GraphQLSchema({
     query: RootQuery,
-    mutation: Mutation
+    mutation: Mutations
 })
