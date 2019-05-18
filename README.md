@@ -12,7 +12,7 @@
 ### In project i use:
 <p style="float: left">
 <img src="https://spectrum.imgix.net/communities/33d6ade9-d505-40f2-926d-b8836bdccdd0/graphql.png.0.7616626405032714?w=256&h=256&expires=1541894400000&ixlib=js-1.2.0&s=2dbd900fb5e88743c15fbdce89635429" alt="GraphQL" width="64" style="display: inline">
-<img src="https://i1.wp.com/www.fyresite.com/wp-content/uploads/2018/10/node-js.png?resize=256%2C256" alt="Noje.js" width="64" style="display: inline">
+<img src="https://software.intel.com/sites/default/files/managed/fa/a0/Runtime-logo-Node.jpg" alt="Node.js" width="64" style="display: inline">
 <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS88qsrd0PXJzWBK2MYRgBWchcs-LMBYwBncfMuLDlAWjHbUXvGIw" alt="Express" width="64" style="display: inline">
 <img src="https://www.mongodb.com/assets/images/global/leaf.png" alt="MongoDB" width="64" style="display: inline">
 </p>
